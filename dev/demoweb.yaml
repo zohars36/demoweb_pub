@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demoweb-deployment
+  labels:
+    app: demoweb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demoweb
+  template:
+    metadata:
+      labels:
+        app: demoweb
+    spec:
+      containers:
+      - name: demoweb
+        image: sizcloud/demoweb:0.0.2
+        ports:
+        - containerPort: 8080
+        env:
+        - name: HOST
+          valueFrom:
+            configMapKeyRef:
+              name: demoweb-config
+              key: host
+        - name: PORT
+          valueFrom:
+            configMapKeyRef:
+              name: demoweb-config
+              key: PORT
+        # - name: CUSTOM_MSG
+        #   valueFrom:
+        #     configMapKeyRef:
+        #       name: demoweb-config
+        #       key: msg
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: demoweb-service
+spec:
+  type: NodePort
+  selector:
+    app: demoweb
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+      nodePort: 30100
